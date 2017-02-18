@@ -5,7 +5,8 @@ from numpy import *
 import pandas as pd # Data frames
 import matplotlib.pyplot as plt # Visuals
 import seaborn as sns # Danker visuals
-# import tensorflow as tf #swaaaaaaaag
+import tensorflow as tf #swaaaaaaaag
+import tempfile 
 from sklearn.model_selection import train_test_split # Create training and test sets
 from sklearn.neighbors import KNeighborsClassifier # Kth Nearest Neighbor
 from sklearn.tree import DecisionTreeClassifier # Decision Trees
@@ -118,5 +119,30 @@ np.save('normalizedData/trainingSetY.npy', class_set)
 
 np.save('normalizedData/testSetX.npy', test_set) 
 np.save('normalizedData/testSetY.npy', test_class_set) 
+
+# Let's begin training some learning algorithms! 
+# Start with a relatively simple one: linear regression with tensorflow 
+inputs = tf.placeholder(tf.float32, shape=[None, 30])
+labels = tf.placeholder(tf.float32, shape=[None, 2])
+
+Wout = tf.Variable(tf.truncated_normal([30, 2], stddev=0.1))
+bout = tf.Variable(tf.constant(0.1, shape=[2]))
+output_layer = tf.nn.xw_plus_b(inputs, Wout, bout)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
