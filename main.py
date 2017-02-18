@@ -104,9 +104,20 @@ ax.set(xlim=(-0.5, 1.05))
 ax = sns.boxplot(data = breastCancerDF[1:29], orient = 'h', palette = 'Set2') 
 plt.show() 
 
+# Now that we have cleaned up our data, let's set up our training set & test set 
+train, test = train_test_split(breastCancerDF, test_size = 0.2, random_state = 42) 
 
+train_set = train.ix[:, train.columns != 'diagnosis'] 
+class_set = train.ix[:, train.columns == 'diagnosis'] 
 
+test_set = test.ix[:, test.columns != 'diagnosis']
+test_class_set = test.ix[:, test.columns == 'diagnosis']
 
+np.save('normalizedData/trainingSetX.npy', train_set) 
+np.save('normalizedData/trainingSetY.npy', class_set) 
+
+np.save('normalizedData/testSetX.npy', test_set) 
+np.save('normalizedData/testSetY.npy', test_class_set) 
 
 
 
