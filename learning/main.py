@@ -4,9 +4,10 @@ from soft_reg_model import SoftmaxRegressionModel
 from data_batcher import DataBatcher
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
 import tensorflow as tf
 
-epochs = 400
+epochs = 600
 batch_size = 20
 
 batcher = DataBatcher("../normalizedData/trainingSetX.npy", "../normalizedData/trainingSetY.npy", "../normalizedData/testSetX.npy", "../normalizedData/testSetY.npy")
@@ -29,6 +30,16 @@ with tf.Session() as session:
         if batcher.epoch_finished():
             batcher.reset_epoch()
             test_samples, test_labels = batcher.get_test_batch()
+
+            fp = 0
+            fn = 0
+            pred = np.argmax(model.predict(session, test_samples), axis=1)
+            for index, i in enumerate(np.argmax(test_labels, axis=1)):
+                if pred[index] == 1 and i != pred[index]:
+                    fp += 1
+                if pred[index] == 0 and i != pred[index]:
+                    fn += 1
+
             acc = model.get_accuracy(session, test_samples, test_labels)
             acc_log = log_model.get_accuracy(session, test_samples, test_labels)
             acc_soft = soft_model.get_accuracy(session, test_samples, test_labels)
@@ -36,7 +47,7 @@ with tf.Session() as session:
             plot_y.append(acc)
             plot_y_log.append(acc_log)
             plot_y_soft.append(acc_soft)
-            print("Epoch {} ~ NN: {} | SoftR: {} | LogR: {}".format(epoch_index, acc, acc_soft, acc_log))
+            print("Epoch {} ~ NN: {}({}, {}) | SoftR: {} | LogR: {}".format(epoch_index, acc, fp, fn, acc_soft, acc_log))
             epoch_index += 1
 
 sns.set_style("darkgrid")

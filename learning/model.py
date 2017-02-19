@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 
 class Model:
     def __init__(self, hidden_layer_sizes):
@@ -23,7 +24,7 @@ class Model:
 
             self.accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(self.probabilities, axis=1), tf.argmax(self.labels, axis=1)), tf.float32))
 
-            self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=output_layer, labels=self.labels))
+            self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=np.array([0.9, 0.1]) * output_layer, labels=self.labels))
             self.train = tf.train.AdamOptimizer(1e-4).minimize(self.loss)
 
     def train_model(self, session, inputs, labels):
