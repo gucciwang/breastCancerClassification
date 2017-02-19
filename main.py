@@ -121,75 +121,40 @@ np.save('normalizedData/trainingSetY.npy', class_set)
 np.save('normalizedData/testSetX.npy', test_set) 
 np.save('normalizedData/testSetY.npy', test_class_set) 
 
-# Let's begin training some learning algorithms! 
-# Start with a relatively simple one: linear regression with tensorflow 
-inputs = tf.placeholder(tf.float32, shape=[None, 30])
-labels = tf.placeholder(tf.float32, shape=[None, 2])
+# let's do k nearest neighbor for fun lmao 
+# Employing a majority votes methodology using Euclidian distance 
 
-Wout = tf.Variable(tf.truncated_normal([30, 2], stddev=0.1))
-bout = tf.Variable(tf.constant(0.1, shape=[2]))
-output_layer = tf.nn.xw_plus_b(inputs, Wout, bout)
+breastCancerKNN = KNeighborsClassifier(n_neighbors = 9) 
+breastCancerKNN.fit(train_set, class_set['diagnosis'])
 
-loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=output_layer, labels=labels))
+# predicting class for training set 
+predictionsTrain = breastCancerKNN.predict(train_set)
 
-train = tf.train.AdamOptimizer(1e-4).minimize(loss) 
+# let's make a matrix that compares actual values to predicted values 
+print(pd.crosstab(predictionsTrain, class_set['diagnosis'], 
+	rownames = ['Predicted Values'], 
+	colnames = ['Actual Values']))  
 
-probabilities = tf.nn.softmax(output_layer)
+# let's measure the accuracy based on the training set 
+accuracyTrain = breastCancerKNN.score(train_set, class_set['diagnosis']) 
 
-accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(probabilities, axis=1), tf.argmax(labels, axis=1)), tf.float32))
+print("Here is our accuracy for the training set:")
+print('%.3f' % (accuracyTrain * 100), '%') 
+print("And here is our train error rate for our model:")
+print('%.3f' % ((1 - accuracyTrain) * 100), '%') 
 
-batcher = DataBatcher("normalizedData/trainingSetX.npy", "normalizedData/trainingSetY.npy", "normalizedData/testSetX.npy", "normalizedData/testSetY.npy")
 
-epochs = 500
-batch_size = 20
 
-plot_x = list()
-plot_y = list()
-with tf.Session() as session:
-    session.run(tf.global_variables_initializer())
-    epoch_index = 0
-    while epoch_index < epochs:
-        samples, classes_labels = batcher.get_batch(batch_size)
-        session.run(train, feed_dict={inputs: samples, labels: classes_labels})
-        if batcher.epoch_finished():
-            batcher.reset_epoch()
-            test_samples, test_labels = batcher.get_test_batch()
-            class_loss = session.run(loss, feed_dict={inputs: test_samples, labels: test_labels})
-            acc = session.run(accuracy, feed_dict={inputs: test_samples, labels: test_labels})
-            plot_x.append(epoch_index+1)
-            plot_y.append(acc)
-            print("Epoch {} -> {}".format(epoch_index+1, acc))
-            epoch_index += 1
 
-sns.set_style("darkgrid")
-plt.plot(plot_x, plot_y)
-plt.show()
 
-# Now let's have some fun with Decision Trees 
-DT = DecisionTreeClassifier(random_state = 42)
-fit = DT.fit(train_set, class_set)
 
-with open('breastCancerWD.dot', 'w') as f: 
-	f = export_graphviz(fit, out_file = f) 
 
-importances = fit.feature_importances_
-indices = np.argsort(importances)[::-1]
-print(indices)
 
-# Let's figure out the Gini Index of how often a randomly chosen element from 
-# the set would be incorrectly labeled if it was randomly labeled according to 
-# the distribution of labels in the subset. 
 
-namesInd = names[2:] #excluding id & diagnosis bc no need for Gini Index
-print ("Feature ranking:")
 
-for f in range (29): 
-	i = f 
-	print("%d. The feature '%s' has a Gini Importance of %f" % (f + 1, namesInd[indices[i]], importances[indices[f]]))
 
-accuracy_dt = fit.score(test_set, test_class_set['diagnosis'])
 
-print("Here is our mean accuracy on the test set:")
-print('%.2f' % accuracy_dt)
+
+
 
 
